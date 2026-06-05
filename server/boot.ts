@@ -12,6 +12,22 @@ import { env } from "./lib/env";
 const app = new Hono<{ Bindings: HttpBindings }>();
 
 app.use(bodyLimit({ maxSize: 50 * 1024 * 1024 }));
+
+// Cache public read-only tRPC queries at the Vercel edge for 30s,
+// serve stale responses for up to 60s while revalidating in background.
+// This eliminates cold start delays for unauthenticated article listings.
+app.use("/api/trpc/*", async (c, next) => {
+  await next();
+  // Only cache GET requests (tRPC queries) for the public post.list endpoint
+  const url = c.req.url;
+  const isQuery = c.req.method === "GET";
+  const isPublicEndpoint = url.includes("post.list") || url.includes("post.byId");
+  const hasAuth = c.req.header("authorization");
+  if (isQuery && isPublicEndpoint && !hasAuth) {
+    c.res.headers.set("Cache-Control", "public, s-maxage=30, stale-while-revalidate=60");
+  }
+});
+
 app.use("/api/trpc/*", async (c) => {
   return fetchRequestHandler({
     endpoint: "/api/trpc",

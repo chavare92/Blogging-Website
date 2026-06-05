@@ -16,12 +16,6 @@ export type TrpcContext = {
 export async function createContext(
   opts: FetchCreateContextFnOptions,
 ): Promise<TrpcContext> {
-  // Dev: disable TLS cert verification for corporate SSL-inspection proxies.
-  // Node.js fetch (undici) fails with "unable to get local issuer certificate" otherwise.
-  // vite.config.ts also sets this at startup, but we set it here as a belt-and-suspenders
-  // measure in case this module is loaded before vite.config.ts callback runs.
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-
   // Ensure .env vars are loaded. Only sets vars not already in process.env — safe to call
   // on every request (idempotent, no-op after first call).
   dotenvConfig();

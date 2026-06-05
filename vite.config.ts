@@ -40,6 +40,37 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: path.resolve(__dirname, "dist/public"),
       emptyOutDir: true,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            "vendor-react": ["react", "react-dom", "react-router"],
+            "vendor-editor": [
+              "@tiptap/react",
+              "@tiptap/starter-kit",
+              "@tiptap/extension-image",
+              "@tiptap/extension-link",
+              "@tiptap/extension-placeholder",
+              "@tiptap/extension-underline",
+              "@tiptap/extension-bubble-menu",
+            ],
+            "vendor-ui": [
+              "@radix-ui/react-dialog",
+              "@radix-ui/react-dropdown-menu",
+              "@radix-ui/react-select",
+              "@radix-ui/react-tooltip",
+              "@radix-ui/react-avatar",
+              "@radix-ui/react-popover",
+              "@radix-ui/react-tabs",
+            ],
+            "vendor-trpc": [
+              "@trpc/client",
+              "@trpc/react-query",
+              "@tanstack/react-query",
+              "superjson",
+            ],
+          },
+        },
+      },
     },
   };
 });

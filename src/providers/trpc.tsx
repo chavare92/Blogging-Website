@@ -9,7 +9,16 @@ import { supabase } from "@/lib/supabase";
 export const trpc = createTRPCReact<AppRouter>();
 
 function makeClients() {
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 1000 * 60,      // 1 minute — data is fresh, no refetch
+        gcTime: 1000 * 60 * 5,    // keep in cache for 5 minutes after unmount
+        retry: 1,                  // retry failed requests once
+        refetchOnWindowFocus: false, // don't refetch when user alt-tabs back
+      },
+    },
+  });
   const trpcClient = trpc.createClient({
     links: [
       httpBatchLink({

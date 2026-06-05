@@ -2,6 +2,7 @@
   "version": 2,
   "framework": "vite",
   "outputDirectory": "dist/public",
+  "regions": ["sin1"],
   "rewrites": [
     {
       "source": "/api/(.*)",
