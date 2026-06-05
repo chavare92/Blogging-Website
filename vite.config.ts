@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
-      devServer({ entry: "api/boot.ts", exclude: [/^\/(?!api\/).*/] }),
+      devServer({ entry: "server/boot.ts", exclude: [/^\/(?!api\/).*/] }),
       inspectAttr(), react()],
     server: {
       port: 3000,
