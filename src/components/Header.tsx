@@ -18,9 +18,11 @@ export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const [prevPathname, setPrevPathname] = useState(location.pathname);
+  if (location.pathname !== prevPathname) {
+    setPrevPathname(location.pathname);
     setMobileMenuOpen(false);
-  }, [location.pathname]);
+  }
 
   // Close dropdown when clicking outside
   useEffect(() => {

@@ -92,6 +92,34 @@ interface RichEditorProps {
   value?: string;
 }
 
+const ToolbarBtn = ({
+  onClick,
+  active = false,
+  title,
+  children,
+}: {
+  onClick: () => void;
+  active?: boolean;
+  title: string;
+  children: React.ReactNode;
+}) => (
+  <button
+    type="button"
+    onMouseDown={(e) => e.preventDefault()} // keep editor selection alive
+    onClick={onClick}                        // fire command after mouseup
+    title={title}
+    className={`p-1.5 rounded-md transition-colors ${
+      active
+        ? "bg-blue-100 text-blue-700"
+        : "text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+    }`}
+  >
+    {children}
+  </button>
+);
+
+const Divider = () => <div className="w-px h-5 bg-gray-200 mx-0.5" />;
+
 export default function RichEditor({ onChange, placeholder = "Start writing your article...", value }: RichEditorProps) {
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [showImageInput, setShowImageInput] = useState(false);
@@ -169,34 +197,6 @@ export default function RichEditor({ onChange, placeholder = "Start writing your
   // Floating bubble state — position derived from browser selection
   const { selection } = editor.state;
   const hasTextSelection = !selection.empty && selection.$from.pos !== selection.$to.pos;
-
-  const ToolbarBtn = ({
-    onClick,
-    active = false,
-    title,
-    children,
-  }: {
-    onClick: () => void;
-    active?: boolean;
-    title: string;
-    children: React.ReactNode;
-  }) => (
-    <button
-      type="button"
-      onMouseDown={(e) => e.preventDefault()} // keep editor selection alive
-      onClick={onClick}                        // fire command after mouseup
-      title={title}
-      className={`p-1.5 rounded-md transition-colors ${
-        active
-          ? "bg-blue-100 text-blue-700"
-          : "text-gray-500 hover:bg-gray-100 hover:text-gray-800"
-      }`}
-    >
-      {children}
-    </button>
-  );
-
-  const Divider = () => <div className="w-px h-5 bg-gray-200 mx-0.5" />;
 
   return (
     <div className="border border-gray-200 rounded-xl bg-white overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">

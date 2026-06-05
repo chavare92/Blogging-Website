@@ -17,18 +17,11 @@ export default function EditPost() {
   const postId = Number(id);
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
-  const utils = trpc.useUtils();
 
   const { data: post, isLoading: postLoading } = trpc.post.byId.useQuery(
     { id: postId },
     { enabled: !isNaN(postId) }
   );
-
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [selectedTopic, setSelectedTopic] = useState<string | undefined>();
-  const [coverImage, setCoverImage] = useState("");
-  const [initialised, setInitialised] = useState(false);
 
   // Redirect unauthenticated users
   useEffect(() => {
@@ -37,17 +30,6 @@ export default function EditPost() {
     }
   }, [user, authLoading, navigate, postId]);
 
-  // Pre-populate form once post data is loaded
-  useEffect(() => {
-    if (post && !initialised) {
-      setTitle(post.title);
-      setContent(post.content);
-      setSelectedTopic(post.topic ?? undefined);
-      setCoverImage(post.coverImage ?? "");
-      setInitialised(true);
-    }
-  }, [post, initialised]);
-
   // Ownership check — redirect if this post belongs to someone else
   useEffect(() => {
     if (!postLoading && post && user && post.userId && post.userId !== user.id) {
@@ -55,6 +37,59 @@ export default function EditPost() {
       navigate(`/post/${postId}`, { replace: true });
     }
   }, [post, postLoading, user, postId, navigate]);
+
+  if (authLoading || postLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 font-sans">
+        <Header />
+        <div className="max-w-3xl mx-auto px-4 pt-24 pb-16 animate-pulse space-y-4">
+          <div className="w-3/4 h-10 rounded bg-gray-200" />
+          <div className="w-full h-64 rounded bg-gray-200" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!post) {
+    return (
+      <div className="min-h-screen bg-gray-50 font-sans">
+        <Header />
+        <div className="max-w-3xl mx-auto px-4 pt-28 pb-16 text-center">
+          <p className="text-gray-500">Post not found.</p>
+          <Link to="/" className="text-blue-600 text-sm hover:underline mt-4 inline-block">Back to home</Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Ensure user owns the post before displaying the form
+  if (user && post.userId && post.userId !== user.id) {
+    return null;
+  }
+
+  return <EditPostForm post={post} />;
+}
+
+interface EditPostFormProps {
+  post: {
+    id: number;
+    userId: string | null;
+    title: string;
+    content: string;
+    topic: string | null;
+    coverImage: string | null;
+  };
+}
+
+function EditPostForm({ post }: EditPostFormProps) {
+  const navigate = useNavigate();
+  const utils = trpc.useUtils();
+  const postId = post.id;
+
+  const [title, setTitle] = useState(post.title);
+  const [content, setContent] = useState(post.content);
+  const [selectedTopic, setSelectedTopic] = useState<string | undefined>(post.topic ?? undefined);
+  const [coverImage, setCoverImage] = useState(post.coverImage ?? "");
 
   const updatePost = trpc.post.update.useMutation({
     onSuccess: (data) => {
@@ -78,31 +113,7 @@ export default function EditPost() {
     });
   };
 
-  const canSave = title.trim().length > 0 && content.trim().length > 0 && content !== "<p></p>" && initialised;
-
-  if (authLoading || postLoading || !initialised) {
-    return (
-      <div className="min-h-screen bg-gray-50 font-sans">
-        <Header />
-        <div className="max-w-3xl mx-auto px-4 pt-24 pb-16 animate-pulse space-y-4">
-          <div className="w-3/4 h-10 rounded bg-gray-200" />
-          <div className="w-full h-64 rounded bg-gray-200" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!post) {
-    return (
-      <div className="min-h-screen bg-gray-50 font-sans">
-        <Header />
-        <div className="max-w-3xl mx-auto px-4 pt-28 pb-16 text-center">
-          <p className="text-gray-500">Post not found.</p>
-          <Link to="/" className="text-blue-600 text-sm hover:underline mt-4 inline-block">Back to home</Link>
-        </div>
-      </div>
-    );
-  }
+  const canSave = title.trim().length > 0 && content.trim().length > 0 && content !== "<p></p>";
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">

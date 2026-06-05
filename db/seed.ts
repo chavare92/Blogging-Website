@@ -1,5 +1,5 @@
-import { drizzle } from "drizzle-orm/mysql2";
-import { createPool } from "mysql2/promise";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import { posts } from "./schema";
 import * as dotenv from "dotenv";
 
@@ -56,8 +56,8 @@ async function seed() {
     process.exit(1);
   }
 
-  const pool = createPool(process.env.DATABASE_URL);
-  const db = drizzle(pool);
+  const queryClient = postgres(process.env.DATABASE_URL, { prepare: false, ssl: "require" });
+  const db = drizzle(queryClient);
 
   console.log("Seeding database with sample posts...");
 
@@ -67,7 +67,7 @@ async function seed() {
   }
 
   console.log(`Successfully seeded ${samplePosts.length} posts!`);
-  await pool.end();
+  await queryClient.end();
 }
 
 seed().catch((err) => {
