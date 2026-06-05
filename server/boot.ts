@@ -11,7 +11,9 @@ import { env } from "./lib/env";
 
 const app = new Hono<{ Bindings: HttpBindings }>();
 
-app.use(bodyLimit({ maxSize: 50 * 1024 * 1024 }));
+app.get("/api/health", (c) =>
+  c.json({ status: "ok", time: new Date().toISOString(), vercel: !!process.env.VERCEL })
+);
 
 // Cache public read-only tRPC queries at the Vercel edge for 30s,
 // serve stale responses for up to 60s while revalidating in background.
@@ -40,7 +42,7 @@ app.all("/api/*", (c) => c.json({ error: "Not Found" }, 404));
 
 export default app;
 
-if (env.isProduction) {
+if (env.isProduction && !process.env.VERCEL) {
   const { serve } = await import("@hono/node-server");
   const { serveStaticFiles } = await import("./lib/vite");
   serveStaticFiles(app);

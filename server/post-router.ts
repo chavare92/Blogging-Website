@@ -11,7 +11,7 @@ export const postRouter = createRouter({
       z.object({
         search: z.string().optional(),
         topic: z.string().optional(),
-      }).optional()
+      }).nullish()
     )
     .query(async ({ input }) => {
       const db = getDb();
